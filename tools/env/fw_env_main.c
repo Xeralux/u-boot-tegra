@@ -121,9 +121,10 @@ void usage_setenv(void)
 static void parse_common_args(int argc, char *argv[])
 {
 	int c;
+	char *fwc = getenv("FW_CONFIG");
 
 #ifdef CONFIG_FILE
-	env_opts.config_file = CONFIG_FILE;
+	env_opts.config_file = (fwc ? fwc : CONFIG_FILE);
 #endif
 
 	while ((c = getopt_long(argc, argv, ":a:c:h", long_options, NULL)) !=
