@@ -37,8 +37,9 @@
 
 struct env_opts default_opts = {
 #ifdef CONFIG_FILE
-	.config_file = CONFIG_FILE
+	.config_file = CONFIG_FILE,
 #endif
+	.op = OP_SET,
 };
 
 #define DIV_ROUND_UP(n, d)	(((n) + (d) - 1) / (d))
@@ -467,7 +468,7 @@ int fw_setenv(int argc, char *argv[], struct env_opts *opts)
 	if (!opts)
 		opts = &default_opts;
 
-	if (argc < 1) {
+	if (opts->op != OP_DEFAULTALL && argc < 1) {
 		fprintf(stderr, "## Error: variable name missing\n");
 		errno = EINVAL;
 		return -1;
@@ -478,9 +479,35 @@ int fw_setenv(int argc, char *argv[], struct env_opts *opts)
 		return -1;
 	}
 
+        if (opts->op == OP_DEFAULTALL) {
+		if (argc > 0) {
+			fprintf(stderr, "## Error: variable name(s) specified with --default-all\n");
+			errno = EINVAL;
+			return -1;
+		}
+                memcpy(environment.data, default_environment, sizeof default_environment);
+                return fw_env_close(opts);
+        }
+
 	name = argv[0];
 	valv = argv + 1;
 	valc = argc - 1;
+
+        if (opts->op == OP_DEFAULT) {
+		if (valc > 0) {
+			fprintf(stderr, "## Error: value(s) specified with --default\n");
+			errno = EINVAL;
+			return -1;
+		}
+                value = fw_getdefenv(name);
+                if (value == NULL) {
+                        fprintf(stderr, "Error: no default for %s\n", name);
+                        errno = EINVAL;
+                        return -1;
+                }
+                fw_env_write(name, value);
+                return fw_env_close(opts);
+        }
 
 	if (env_flags_validate_env_set_params(name, valv, valc) < 0)
 		return 1;
