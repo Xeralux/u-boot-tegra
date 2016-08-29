@@ -1709,6 +1709,26 @@ static int do_sysboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (prompt)
 		cfg->prompt = 1;
 
+	/*
+	 * If the menu had no DEFAULT setting, see if there's an env var
+	 * set to select a default (can match either label->name or label->num).
+	 */
+	if (!cfg->default_label) {
+		char *menudef = getenv("boot_extlinux_label");
+		if (menudef) {
+			struct list_head *pos;
+			struct pxe_label *label;
+			list_for_each(pos, &cfg->labels) {
+				label = list_entry(pos, struct pxe_label, list);
+				if (strcmp(label->name, menudef) == 0 ||
+				    strcmp(label->num, menudef) == 0) {
+					cfg->default_label = strdup(label->name);
+					break;
+				}
+			}
+		}
+	}
+
 	handle_pxe_menu(cmdtp, cfg);
 
 	destroy_pxe_menu(cfg);

@@ -342,6 +342,8 @@
 		"sysboot ${devtype} ${devnum}:${distro_bootpart} any "    \
 			"${scriptaddr} ${prefix}extlinux/extlinux.conf\0" \
 	\
+	"boot_extlinux_label=default\0"				  \
+	\
 	"scan_dev_for_extlinux="                                          \
 		"if test -e ${devtype} "                                  \
 				"${devnum}:${distro_bootpart} "           \
