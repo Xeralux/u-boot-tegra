@@ -1,0 +1,12 @@
+if TARGET_SENSITY_MERLIN
+
+config SYS_BOARD
+	default "merlin"
+
+config SYS_VENDOR
+	default "sensity"
+
+config SYS_CONFIG_NAME
+	default "sensity-merlin"
+
+endif

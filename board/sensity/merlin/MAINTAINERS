@@ -1,0 +1,6 @@
+Merlin BOARD
+M:	Matt Madison <mmadison@sensity.com>
+S:	Maintained
+F:	board/sensity/merlin/
+F:	include/configs/sensity-merlin.h
+F:	configs/sensity-merlin_defconfig

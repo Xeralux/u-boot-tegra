@@ -36,6 +36,11 @@ config TARGET_M3402_0000
 	help
 	  OrcaRacer is a M3402 CPU board with a E3401 base board.
 
+config TARGET_SENSITY_MERLIN
+	bool "Sensity Merlin board"
+	help
+	  Sensity Merlin Video Node
+
 endchoice
 
 config SYS_SOC
@@ -46,5 +51,6 @@ source "board/nvidia/p2371-0000/Kconfig"
 source "board/nvidia/p2371-2180/Kconfig"
 source "board/nvidia/p2571/Kconfig"
 source "board/nvidia/m3402-0000/Kconfig"
+source "board/sensity/merlin/Kconfig"
 
 endif
