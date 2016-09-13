@@ -11,7 +11,7 @@
 #include <pca953x.h>
 #include <asm/arch/gpio.h>
 #include <asm/arch/pinmux.h>
-#include "../p2571/max77620_init.h"
+#include "../../nvidia/p2571/max77620_init.h"
 #include "pinmux-config-merlin.h"
 
 void pin_mux_mmc(void)
