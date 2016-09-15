@@ -18,10 +18,6 @@
 #define EEPROM_I2C_BUS		3
 #define EEPROM_I2C_ADDRESS	0x50
 
-#define CONFIG_OF_ADD_CAM_BOARD_ID
-#define CAM_EEPROM_I2C_BUS	5
-#define CAM_EEPROM_I2C_ADDR	0x54
-
 /* High-level configuration options */
 #define CONFIG_SYS_PROMPT		"Merlin # "
 #define CONFIG_TEGRA_BOARD_STRING	"Sensity Merlin"
