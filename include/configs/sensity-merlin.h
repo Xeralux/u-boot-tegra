@@ -34,6 +34,7 @@
 #define CONFIG_SYS_MMC_ENV_DEV		0
 #define CONFIG_SYS_MMC_ENV_PART		2
 #define CONFIG_ENV_OFFSET		(-CONFIG_ENV_SIZE)
+#define CONFIG_ENV_OFFSET_REDUND	(-2*CONFIG_ENV_SIZE)
 
 /* SPI */
 #define CONFIG_TEGRA114_SPI		/* Compatible w/ Tegra114 SPI */
@@ -69,9 +70,13 @@
 /* General networking support */
 #define CONFIG_CMD_DHCP
 
-/* XXX - settings for now, will need to change */
+#ifdef CONFIG_MANUFACTURING
+#define CONFIG_BOOT_RETRY_TIME		-1
+#define CONFIG_BOOTDELAY		5
+#else
 #define CONFIG_BOOT_RETRY_TIME		300
 #define CONFIG_BOOTDELAY		2
+#endif
 #define CONFIG_BOOTCOUNT_ENV
 #define CONFIG_BOOTCOUNT_LIMIT
 #define CONFIG_BOOT_RETRY_TIME_MIN	10

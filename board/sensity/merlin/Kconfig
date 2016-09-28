@@ -9,4 +9,7 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "sensity-merlin"
 
+config MANUFACTURING
+	bool "Build for manufacturing use"
+
 endif
