@@ -101,7 +101,6 @@
 	"bootlimit=3\0" \
 	"bootretry=" __stringify(CONFIG_BOOT_RETRY_TIME) "\0" \
 	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
-	"fdt_addr_r=0x82000000\0" \
 	"console=" CONFIG_CONSOLE_DEV "\0" \
 	"extra_bootargs=loglevel=3\0" \
 	"mmcpart=1\0" \
@@ -111,13 +110,19 @@
 	"mmcargs=run mmcroot_eval; " \
 		"setenv bootargs console=${console},115200n8 " BOARD_BASE_BOOTARGS " root=${mmcroot} ro rootwait ${extra_bootargs}\0" \
 	"image=Image\0" \
-	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
+	"initrdfile=initrd\0" \
 	"loadimage=echo Loading kernel at ${kernel_addr_r}; ext2load mmc 0:${mmcpart} ${kernel_addr_r} /boot/${image}\0" \
 	"loadfdt=echo Loading FDT at ${fdt_addr_r}; ext2load mmc 0:${mmcpart} ${fdt_addr_r} /boot/${fdtfile}\0" \
+	"loadinitrd=echo Loading initrd at ${ramdisk_addr_r}; if ext2load mmc 0:${mmcpart} ${ramdisk_addr_r} /boot/${initrdfile}; then " \
+			"setenv initrd_addr ${ramdisk_addr_r}; " \
+		"else " \
+			"echo No initrd present - skipping; " \
+			"setenv initrd_addr -; " \
+		"fi;\0" \
 	"defaultfdt=ext2load mmc 0:${mmcpart} ${fdt_addr_r} /boot/" CONFIG_DEFAULT_FDT_FILE "\0" \
-	"mmcboot=echo Boot args: ${bootargs}; echo Booting from eMMC...; " \
-		"if run loadfdt; then booti ${kernel_addr_r} - ${fdt_addr_r}; " \
-			"else if run defaultfdt; then booti ${kernel_addr_r} - ${fdt_addr_r}; " \
+	"mmcboot=run loadinitrd; echo Boot args: ${bootargs}; echo Booting from eMMC...; " \
+		"if run loadfdt; then booti ${kernel_addr_r} ${initrd_addr} ${fdt_addr_r}; " \
+			"else if run defaultfdt; then booti ${kernel_addr_r} ${initrd_addr} ${fdt_addr_r}; " \
 				"else echo FAIL: could not load FDT; " \
 		"fi; fi;\0" \
 	 "altbootcmd=run mmcpart_swap; run bootcmd\0"
