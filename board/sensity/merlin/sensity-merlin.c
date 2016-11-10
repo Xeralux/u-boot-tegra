@@ -79,6 +79,10 @@ void arch_preboot_os(void)
 #ifdef CONFIG_PCI_TEGRA
 	tegra_pcie_power_down();
 #endif
+	if (!gpio_request(GPIO_PH6, "status-led")) {
+		gpio_set_value(GPIO_PH6, 0);
+		gpio_free(GPIO_PH6);
+	}
 }
 
 #ifdef CONFIG_PCI_TEGRA
