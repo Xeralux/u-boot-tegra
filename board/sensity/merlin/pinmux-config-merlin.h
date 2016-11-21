@@ -150,7 +150,7 @@ static const struct pmux_pingrp_config merlin_pingrps[] = {
 	PINCFG(PK3,                  RSVD2,      DOWN,   TRISTATE, OUTPUT,  DISABLE, DEFAULT),
 	PINCFG(PK4,                  DEFAULT,    NORMAL, NORMAL,   INPUT,   DISABLE, DEFAULT),
 	PINCFG(PK5,                  DEFAULT,    NORMAL, NORMAL,   INPUT,   DISABLE, DEFAULT),
-	PINCFG(PK6,                  DEFAULT,    NORMAL, NORMAL,   OUTPUT,  DISABLE, DEFAULT),
+	PINCFG(PK6,                  RSVD1,      NORMAL, NORMAL,   OUTPUT,  DISABLE, DEFAULT),
 	PINCFG(PK7,                  RSVD1,      DOWN,   TRISTATE, OUTPUT,  DISABLE, DEFAULT),
 	PINCFG(PL0,                  RSVD0,      DOWN,   TRISTATE, OUTPUT,  DISABLE, DEFAULT),
 	PINCFG(PL1,                  DEFAULT,    NORMAL, NORMAL,   INPUT,   DISABLE, DEFAULT),
