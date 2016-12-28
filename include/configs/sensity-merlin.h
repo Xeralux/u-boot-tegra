@@ -106,7 +106,7 @@
 	"mmcpart=1\0" \
 	"mmcroot=/dev/mmcblk0p1\0" \
 	"mmcroot_eval=setenv mmcroot /dev/mmcblk0p${mmcpart}\0" \
-	"mmcpart_swap=if test ${mmcpart} -eq 2; then setenv mmcpart 1; else setenv mmcpart 2; fi; setenv bootcount 0; saveennv\0" \
+	"mmcpart_swap=if test ${mmcpart} -eq 2; then setenv mmcpart 1; else setenv mmcpart 2; fi; setenv bootcount 0; saveenv\0" \
 	"mmcargs=run mmcroot_eval; " \
 		"setenv bootargs console=${console},115200n8 " BOARD_BASE_BOOTARGS " root=${mmcroot} ro rootwait ${extra_bootargs}\0" \
 	"image=Image\0" \
