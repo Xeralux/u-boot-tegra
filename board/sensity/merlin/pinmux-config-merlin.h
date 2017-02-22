@@ -50,7 +50,7 @@ static const struct tegra_gpio_config merlin_gpio_inits[] = {
 	GPIO_INIT(T0,   OUT0),
 	GPIO_INIT(V5,   OUT1),
 	GPIO_INIT(V6,   OUT1),
-	GPIO_INIT(X0,   OUT1),
+	GPIO_INIT(X0,   OUT0),
 	GPIO_INIT(X1,   IN),
 	GPIO_INIT(X2,   IN),
 	GPIO_INIT(X3,   IN),
