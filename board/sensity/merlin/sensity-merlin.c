@@ -83,6 +83,11 @@ void arch_preboot_os(void)
 		gpio_set_value(GPIO_PH6, 0);
 		gpio_free(GPIO_PH6);
 	}
+	if (!gpio_request(GPIO_PK6, "socfpga-por")) {
+		gpio_set_value(GPIO_PK6, 1);
+		gpio_free(GPIO_PK6);
+		printf("releasing socfpga from POR\n");
+	}
 }
 
 #ifdef CONFIG_PCI_TEGRA
