@@ -85,8 +85,19 @@ void arch_preboot_os(void)
 	}
 	if (!gpio_request(GPIO_PK6, "socfpga-por")) {
 		gpio_set_value(GPIO_PK6, 1);
+		if (!gpio_request(GPIO_PV6, "spiflash-reset")) {
+			gpio_set_value(GPIO_PV6, 1);
+			gpio_free(GPIO_PV6);
+			printf("-- Released SPI flash from reset\n");
+		}
+		if (!gpio_request(GPIO_PH7, "spi-muxsel")) {
+			gpio_set_value(GPIO_PH7, 1);
+			gpio_free(GPIO_PH7);
+			udelay(10);
+			printf("-- Released SPI bus to socfpga\n");
+		}
 		gpio_free(GPIO_PK6);
-		printf("releasing socfpga from POR\n");
+		printf("-- Released socfpga from POR\n");
 	}
 }
 
