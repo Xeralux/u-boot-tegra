@@ -11,14 +11,7 @@
 
 #include "tegra210-common.h"
 
-/* Parse the board ID EEPROM and update DT */
-#define CONFIG_NV_BOARD_ID_EEPROM
-#define CONFIG_OF_ADD_CHOSEN_MAC_ADDRS
-#define EEPROM_I2C_BUS		3
-#define EEPROM_I2C_ADDRESS	0x50
-
 /* High-level configuration options */
-#define CONFIG_SYS_PROMPT		"Merlin # "
 #define CONFIG_TEGRA_BOARD_STRING	"Sensity Merlin"
 
 /* Board-specific serial config */
@@ -26,14 +19,12 @@
 
 /* I2C */
 #define CONFIG_SYS_I2C_TEGRA
-#define CONFIG_CMD_I2C
 #define CONFIG_SYS_VI_I2C_TEGRA
 
 /* SD/MMC */
 #define CONFIG_MMC
 #define CONFIG_GENERIC_MMC
 #define CONFIG_TEGRA_MMC
-#define CONFIG_CMD_MMC
 
 /* Environment in eMMC, at the end of 2nd "boot sector" */
 #define CONFIG_ENV_IS_IN_MMC
@@ -43,28 +34,30 @@
 #define CONFIG_ENV_OFFSET_REDUND	(-2*CONFIG_ENV_SIZE)
 
 /* SPI */
-#define CONFIG_TEGRA114_SPI		/* Compatible w/ Tegra114 SPI */
-#define CONFIG_TEGRA114_SPI_CTRLS	6
-#define CONFIG_SPI_FLASH_WINBOND
 #define CONFIG_SF_DEFAULT_MODE		SPI_MODE_0
 #define CONFIG_SF_DEFAULT_SPEED		24000000
-#define CONFIG_CMD_SPI
-#define CONFIG_CMD_SF
 #define CONFIG_SPI_FLASH_SIZE		(4 << 20)
 
 /* USB2.0 Host support */
 #define CONFIG_USB_EHCI
 #define CONFIG_USB_EHCI_TEGRA
-#define CONFIG_USB_MAX_CONTROLLER_COUNT	1
 #define CONFIG_USB_STORAGE
-#define CONFIG_CMD_USB
 
 /* PCI host support */
 #define CONFIG_PCI
-#define CONFIG_PCI_TEGRA
 #define CONFIG_PCI_PNP
 #define CONFIG_CMD_PCI
-#define CONFIG_CMD_PCI_ENUM
+
+/* Crystal is 38.4MHz. clk_m runs at half that rate */
+#define COUNTER_FREQUENCY	19200000
+
+#if !defined(CONFIG_CPU_BL_IS_CBOOT)
+/* Parse the board ID EEPROM and update DT */
+#define CONFIG_NV_BOARD_ID_EEPROM
+#define CONFIG_NV_BOARD_ID_EEPROM_OF_MAC_ADDRS
+#define EEPROM_I2C_BUS		3
+#define EEPROM_I2C_ADDRESS	0x50
+#endif	/* !CPU_BL_IS_CBOOT */
 
 #ifdef CONFIG_MANUFACTURING
 #define CONFIG_BOOT_RETRY_TIME		-1
@@ -80,10 +73,7 @@
 #define CONFIG_DEFAULT_FDT_FILE		"tegra210-sensity-merlin.dtb"
 #define CONFIG_CONSOLE_DEV		"ttyS0"
 
-#define BOARD_BASE_BOOTARGS "ddr_die=2048@2048M ddr_die=2048@4096M section=256M memtype=0 vpr_resize " \
-	                    "usb_port_owner_info=0 lane_owner_info=0 emc_max_dvfs=0 no_console_suspend=1 " \
-	                    "maxcpus=4 usbcore.old_scheme_first=1 lp0_vec=${lp0_vec} nvdumper_reserved=${nvdumper_reserved} " \
-	                    "core_edp_mv=1125 core_edp_map=4000 gpt"
+#define BOARD_BASE_BOOTARGS "OS=l4t"
 
 #define BOARD_EXTRA_ENV_SETTINGS \
 	"bootcount=0\0" \
@@ -92,13 +82,13 @@
 	"bootretry=" __stringify(CONFIG_BOOT_RETRY_TIME) "\0" \
 	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
 	"console=" CONFIG_CONSOLE_DEV "\0" \
-	"extra_bootargs=loglevel=3\0" \
+	"extra_bootargs=quiet loglevel=3\0" \
 	"mmcpart=1\0" \
 	"mmcroot=/dev/mmcblk0p1\0" \
 	"mmcroot_eval=setenv mmcroot /dev/mmcblk0p${mmcpart}\0" \
 	"mmcpart_swap=if test ${mmcpart} -eq 2; then setenv mmcpart 1; else setenv mmcpart 2; fi; setenv bootcount 0; saveenv\0" \
 	"mmcargs=run mmcroot_eval; " \
-		"setenv bootargs console=${console},115200n8 " BOARD_BASE_BOOTARGS " root=${mmcroot} ro rootwait ${extra_bootargs}\0" \
+		"setenv bootargs ${cbootargs} console=${console},115200n8 " BOARD_BASE_BOOTARGS " root=${mmcroot} ro rootwait ${extra_bootargs}\0" \
 	"image=Image\0" \
 	"initrdfile=initrd\0" \
 	"loadimage=echo Loading kernel at ${kernel_addr_r}; ext2load mmc 0:${mmcpart} ${kernel_addr_r} /boot/${image}\0" \
@@ -134,7 +124,5 @@
 			"else " \
 				"echo FAIL: mmc rescan failed; " \
 			"fi"
-
-#define COUNTER_FREQUENCY	38400000
 
 #endif /* _SENSITY_MERLIN_H */
