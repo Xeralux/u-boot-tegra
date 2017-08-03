@@ -33,21 +33,6 @@
 #define CONFIG_ENV_OFFSET		(-CONFIG_ENV_SIZE)
 #define CONFIG_ENV_OFFSET_REDUND	(-2*CONFIG_ENV_SIZE)
 
-/* SPI */
-#define CONFIG_SF_DEFAULT_MODE		SPI_MODE_0
-#define CONFIG_SF_DEFAULT_SPEED		24000000
-#define CONFIG_SPI_FLASH_SIZE		(4 << 20)
-
-/* USB2.0 Host support */
-#define CONFIG_USB_EHCI
-#define CONFIG_USB_EHCI_TEGRA
-#define CONFIG_USB_STORAGE
-
-/* PCI host support */
-#define CONFIG_PCI
-#define CONFIG_PCI_PNP
-#define CONFIG_CMD_PCI
-
 /* Crystal is 38.4MHz. clk_m runs at half that rate */
 #define COUNTER_FREQUENCY	19200000
 
