@@ -82,8 +82,8 @@
 			"setenv initrd_addr -; " \
 		"fi;\0" \
 	"mmcboot=run loadinitrd; echo Boot args: ${bootargs}; echo Booting from eMMC...; " \
-		"booti ${kernel_addr_r} ${initrd_addr} ${fdt_addr_r};\0" \
-	 "altbootcmd=run mmcpart_swap; run bootcmd\0"
+		"booti ${kernel_addr_r} ${initrd_addr} ${fdt_addr}\0" \
+	"altbootcmd=run mmcpart_swap; run bootcmd\0"
 
 #include "tegra-common-usb-gadget.h"
 #include "tegra-common-post.h"
