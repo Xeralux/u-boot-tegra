@@ -138,7 +138,7 @@
 #define CONFIG_BOUNCE_BUFFER
 #define CONFIG_CRC32_VERIFY
 
-#ifndef CONFIG_SPL_BUILD
+#if !defined(CONFIG_SPL_BUILD) && !defined(DISABLE_DISTRO_BOOTCMD)
 #include <config_distro_defaults.h>
 #define CONFIG_FAT_WRITE
 #endif

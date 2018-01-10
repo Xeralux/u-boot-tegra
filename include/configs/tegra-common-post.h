@@ -21,7 +21,7 @@
 
 #define CONFIG_SYS_NONCACHED_MEMORY	(1 << 20)	/* 1 MiB */
 
-#ifndef CONFIG_SPL_BUILD
+#if !defined(CONFIG_SPL_BUILD) && !defined(DISABLE_DISTRO_BOOTCMD)
 #ifdef CONFIG_TARGET_M3402_0000
 /* NOTE: SCSI <-> SATA via AHCI */
 #define BOOT_TARGET_DEVICES(func) \
