@@ -86,10 +86,9 @@
 	"altbootcmd=run mmcpart_swap; run bootcmd\0"
 
 #include "tegra-common-usb-gadget.h"
+
+#define DISABLE_DISTRO_BOOTCMD
 #include "tegra-common-post.h"
-/* Clear BOOTENV set by config_distro_bootcmd.h */
-#undef BOOTENV
-#define BOOTENV
 
 #undef CONFIG_BOOTCOMMAND
 #define CONFIG_BOOTCOMMAND \
