@@ -51,11 +51,13 @@
  *   for the FDT/DTB to be up to 1M, which is hopefully plenty.
  */
 #define CONFIG_LOADADDR 0x80080000
+#define CONFIG_FDT_ADDR 0x82000000
+#define CONFIG_SYS_BOOTM_LEN (CONFIG_FDT_ADDR - CONFIG_LOADADDR)
 #define MEM_LAYOUT_ENV_SETTINGS \
 	"scriptaddr=0x90000000\0" \
 	"pxefile_addr_r=0x90100000\0" \
 	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
-	"fdt_addr_r=0x82000000\0" \
+	"fdt_addr_r=" __stringify(CONFIG_FDT_ADDR) "\0" \
 	"ramdisk_addr_r=0x83200000\0" \
 	"fdt_del_prop_paths=/pinmux@700008d4/pinctrl-names\0"
 
