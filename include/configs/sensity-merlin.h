@@ -73,7 +73,9 @@
 	"mmcargs=run mmcroot_eval; " \
 		"setenv bootargs ${cbootargs} console=${console},115200n8 " BOARD_BASE_BOOTARGS " root=${mmcroot} ro rootwait ${extra_bootargs}\0" \
 	"image=Image\0" \
+	"fitimage=fitImage\0" \
 	"initrdfile=initrd\0" \
+	"loadfit=ext2load mmc 0:${mmcpart} ${pxefile_addr_r} /boot/${fitimage}\0" \
 	"loadimage=echo Loading kernel at ${kernel_addr_r}; ext2load mmc 0:${mmcpart} ${kernel_addr_r} /boot/${image}\0" \
 	"loadinitrd=echo Loading initrd at ${ramdisk_addr_r}; if ext2load mmc 0:${mmcpart} ${ramdisk_addr_r} /boot/${initrdfile}; then " \
 			"setenv initrd_addr ${ramdisk_addr_r}; " \
@@ -81,6 +83,8 @@
 			"echo No initrd present - skipping; " \
 			"setenv initrd_addr -; " \
 		"fi;\0" \
+	"fitboot=echo Boot args: ${bootargs}; echo Booting FIT image...; " \
+		"bootm ${pxefile_addr_r}#config@1 ${pxefile_addr_r}#config@1 ${fdt_addr}\0" \
 	"mmcboot=run loadinitrd; echo Boot args: ${bootargs}; echo Booting from eMMC...; " \
 		"booti ${kernel_addr_r} ${initrd_addr} ${fdt_addr}\0" \
 	"altbootcmd=run mmcpart_swap; run bootcmd\0"
