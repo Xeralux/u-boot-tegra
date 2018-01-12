@@ -97,10 +97,19 @@
 #undef CONFIG_BOOTCOMMAND
 #define CONFIG_BOOTCOMMAND \
 			"mmc dev 0; if mmc rescan; then " \
-				"run mmcargs; if run loadimage; then " \
-					"run mmcboot; " \
+				"run mmcargs; " \
+				"if run loadfit; then " \
+					"run fitboot; " \
 				"else " \
-					"echo FAIL: could not find Linux kernel; " \
+					"if test \"${secureboot}\" != \"\"; then " \
+						"echo FAIL: could not find Linux kernel; " \
+					"else " \
+						"if run loadimage; then " \
+							"run mmcboot; " \
+						"else " \
+							"echo FAIL: could not find Linux kernel; " \
+						"fi; " \
+					"fi; " \
 				"fi; " \
 			"else " \
 				"echo FAIL: mmc rescan failed; " \
