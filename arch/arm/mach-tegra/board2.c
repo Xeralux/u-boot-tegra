@@ -240,6 +240,10 @@ int board_late_init(void)
 	start_cpu_fan();
 #if defined(CONFIG_TEGRA210)
 	cboot_init_late();
+	if (tegra210_secure_boot_enabled())
+		setenv("secureboot", "1");
+	else
+		setenv("secureboot", "");	
 #endif
 
 	return 0;

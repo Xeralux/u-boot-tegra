@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <common.h>
+#include <linux/string.h>
 #include <linux/ctype.h>
 #include <fdt_support.h>
 #include <fdtdec.h>
@@ -15,6 +16,14 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 extern unsigned long cboot_boot_x0;
+#ifdef CONFIG_TEGRA210
+static bool secureboot;
+
+bool tegra210_secure_boot_enabled(void)
+{
+	return secureboot;
+}
+#endif
 
 char *strstrip(char *s)
 {
@@ -342,6 +351,31 @@ static int set_ethaddr_from_cboot(void)
 }
 #endif	/* T186 */
 
+#ifdef CONFIG_TEGRA210
+static void set_secboot_status(const char *bargs)
+{
+	char *cp = strstr(bargs, "androidboot.security=");
+	char *endp;
+	if (cp == NULL)
+		return;
+	if (cp > bargs && *(cp-1) != ' ')
+		return;
+	cp += sizeof("androidboot.security=") - 1; /* note sizeof() includes terminating nul */
+	for (endp = cp + 1; *endp && *endp != ' ' && endp - cp < 12; endp++);
+	if (*endp == '\0' || *endp == ' ') {
+		if (memcmp(cp, "enabled", 7) == 0) {
+			secureboot = true;
+			printf("Secure boot enabled\n");
+		} else if (memcmp(cp, "non-secure", 10) == 0) {
+			printf("Device is not secured\n");
+		} else
+			error("Unknown security setting in cbootargs\n");
+	} else
+		error("Cannot determine secure boot status\n");
+}
+#endif
+
+
 static int set_cbootargs(void)
 {
 	const void *cboot_blob = (void *)cboot_boot_x0;
@@ -374,7 +408,9 @@ static int set_cbootargs(void)
 	s = strdup((char *)prop);
 	bargs = strstrip(s);
 	debug("%s: bootargs = %s!\n", __func__, bargs);
-
+#ifdef CONFIG_TEGRA210
+	set_secboot_status(bargs);
+#endif
         /* Set cbootargs to env for later use by extlinux files */
 	ret = setenv("cbootargs", bargs);
 	if (ret)
