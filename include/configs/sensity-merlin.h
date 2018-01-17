@@ -9,6 +9,8 @@
 
 #include <linux/sizes.h>
 
+#define DISABLE_DISTRO_BOOTCMD
+
 #include "tegra210-common.h"
 
 /* High-level configuration options */
@@ -57,12 +59,18 @@
 
 #define BOARD_BASE_BOOTARGS "OS=l4t"
 
+#define CONFIG_CMDLINE_EDITING
+#define CONFIG_AUTO_COMPLETE
+#define CONFIG_EFI_PARTITION
+#define CONFIG_ENV_VARS_UBOOT_CONFIG
+
 #ifdef CONFIG_SECURE_BOOT_ONLY
 #define MERLIN_ENV_LEGACY_SETTINGS
 #define MERLIN_BOOTCMD_FALLBACK \
 	"echo FAIL: could not find Linux kernel; "
 #else
 #define CONFIG_IMAGE_FORMAT_LEGACY
+#define CONFIG_CMD_BOOTI
 #define MERLIN_ENV_LEGACY_SETTINGS \
 	"image=Image\0" \
 	"initrdfile=initrd\0" \
@@ -109,7 +117,6 @@
 
 #include "tegra-common-usb-gadget.h"
 
-#define DISABLE_DISTRO_BOOTCMD
 #include "tegra-common-post.h"
 
 #undef CONFIG_BOOTCOMMAND
