@@ -12,4 +12,7 @@ config SYS_CONFIG_NAME
 config MANUFACTURING
 	bool "Build for manufacturing use"
 
+config SECURE_BOOT_ONLY
+	bool "Build for secure boot - no legacy images"
+
 endif
