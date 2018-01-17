@@ -42,7 +42,7 @@
 #include <spi.h>
 #include "emc.h"
 #ifdef CONFIG_TEGRA210
-#include "tegra210/cboot.h"
+#include <asm/arch-tegra/fuse.h>
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -227,6 +227,14 @@ int board_early_init_f(void)
 }
 #endif	/* EARLY_INIT */
 
+#if defined(CONFIG_TEGRA210)
+bool tegra210_secure_boot_enabled(void)
+{
+	struct fuse_regs *fuse = (struct fuse_regs *)NV_PA_FUSE_BASE;
+	return readl(&fuse->security_mode) != 0;
+}
+#endif
+
 int board_late_init(void)
 {
 #if defined(CONFIG_TEGRA_SUPPORT_NON_SECURE)
@@ -240,10 +248,13 @@ int board_late_init(void)
 	start_cpu_fan();
 #if defined(CONFIG_TEGRA210)
 	cboot_init_late();
-	if (tegra210_secure_boot_enabled())
+	if (tegra210_secure_boot_enabled()) {
+		printf("Secure boot: enabled\n");
 		setenv("secureboot", "1");
-	else
-		setenv("secureboot", "");	
+	} else {
+		printf("Secure boot: not enabled\n");
+		setenv("secureboot", "");
+	}
 #endif
 
 	return 0;
