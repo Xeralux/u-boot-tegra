@@ -13,6 +13,5 @@
 
 void cboot_init(void);
 void cboot_init_late(void);
-bool tegra210_secure_boot_enabled(void);
 
 #endif
