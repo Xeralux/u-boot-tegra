@@ -55,9 +55,37 @@
 #define CONFIG_RESET_TO_RETRY
 #define CONFIG_CONSOLE_DEV		"ttyS0"
 
-#define CONFIG_IMAGE_FORMAT_LEGACY
-
 #define BOARD_BASE_BOOTARGS "OS=l4t"
+
+#ifdef CONFIG_SECURE_BOOT_ONLY
+#define MERLIN_ENV_LEGACY_SETTINGS
+#define MERLIN_BOOTCMD_FALLBACK \
+	"echo FAIL: could not find Linux kernel; "
+#else
+#define CONFIG_IMAGE_FORMAT_LEGACY
+#define MERLIN_ENV_LEGACY_SETTINGS \
+	"image=Image\0" \
+	"initrdfile=initrd\0" \
+	"loadimage=echo Loading kernel at ${kernel_addr_r}; ext2load mmc 0:${mmcpart} ${kernel_addr_r} /boot/${image}\0" \
+	"loadinitrd=echo Loading initrd at ${ramdisk_addr_r}; if ext2load mmc 0:${mmcpart} ${ramdisk_addr_r} /boot/${initrdfile}; then " \
+			"setenv initrd_addr ${ramdisk_addr_r}; " \
+		"else " \
+			"echo No initrd present - skipping; " \
+			"setenv initrd_addr -; " \
+		"fi;\0" \
+	"mmcboot=run loadinitrd; echo Boot args: ${bootargs}; echo Booting from eMMC...; " \
+		"booti ${kernel_addr_r} ${initrd_addr} ${fdt_addr}\0"
+#define MERLIN_BOOTCMD_FALLBACK \
+	"if test \"${secureboot}\" != \"\"; then " \
+		"echo FAIL: could not find Linux kernel; " \
+	"else " \
+		"if run loadimage; then " \
+			"run mmcboot; " \
+		"else " \
+			"echo FAIL: could not find Linux kernel; " \
+		"fi; " \
+	"fi; "
+#endif
 
 #define BOARD_EXTRA_ENV_SETTINGS \
 	"bootcount=0\0" \
@@ -72,22 +100,12 @@
 	"mmcpart_swap=if test ${mmcpart} -eq 2; then setenv mmcpart 1; else setenv mmcpart 2; fi; setenv bootcount 0; saveenv\0" \
 	"mmcargs=run mmcroot_eval; " \
 		"setenv bootargs ${cbootargs} console=${console},115200n8 " BOARD_BASE_BOOTARGS " root=${mmcroot} ro rootwait ${extra_bootargs}\0" \
-	"image=Image\0" \
 	"fitimage=fitImage\0" \
-	"initrdfile=initrd\0" \
 	"loadfit=ext2load mmc 0:${mmcpart} ${pxefile_addr_r} /boot/${fitimage}\0" \
-	"loadimage=echo Loading kernel at ${kernel_addr_r}; ext2load mmc 0:${mmcpart} ${kernel_addr_r} /boot/${image}\0" \
-	"loadinitrd=echo Loading initrd at ${ramdisk_addr_r}; if ext2load mmc 0:${mmcpart} ${ramdisk_addr_r} /boot/${initrdfile}; then " \
-			"setenv initrd_addr ${ramdisk_addr_r}; " \
-		"else " \
-			"echo No initrd present - skipping; " \
-			"setenv initrd_addr -; " \
-		"fi;\0" \
 	"fitboot=echo Boot args: ${bootargs}; echo Booting FIT image...; " \
 		"bootm ${pxefile_addr_r}#config@1 ${pxefile_addr_r}#config@1 ${fdt_addr}\0" \
-	"mmcboot=run loadinitrd; echo Boot args: ${bootargs}; echo Booting from eMMC...; " \
-		"booti ${kernel_addr_r} ${initrd_addr} ${fdt_addr}\0" \
-	"altbootcmd=run mmcpart_swap; run bootcmd\0"
+	"altbootcmd=run mmcpart_swap; run bootcmd\0" \
+	MERLIN_ENV_LEGACY_SETTINGS
 
 #include "tegra-common-usb-gadget.h"
 
@@ -101,15 +119,7 @@
 				"if run loadfit; then " \
 					"run fitboot; " \
 				"else " \
-					"if test \"${secureboot}\" != \"\"; then " \
-						"echo FAIL: could not find Linux kernel; " \
-					"else " \
-						"if run loadimage; then " \
-							"run mmcboot; " \
-						"else " \
-							"echo FAIL: could not find Linux kernel; " \
-						"fi; " \
-					"fi; " \
+					MERLIN_BOOTCMD_FALLBACK \
 				"fi; " \
 			"else " \
 				"echo FAIL: mmc rescan failed; " \
