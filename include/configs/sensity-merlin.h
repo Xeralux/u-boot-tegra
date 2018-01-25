@@ -68,6 +68,7 @@
 #define MERLIN_ENV_LEGACY_SETTINGS
 #define MERLIN_BOOTCMD_FALLBACK \
 	"echo FAIL: could not find Linux kernel; "
+#define MERLIN_MODULE_SIGNING "module.sig_enforce"
 #else
 #define CONFIG_IMAGE_FORMAT_LEGACY
 #define CONFIG_CMD_BOOTI
@@ -93,6 +94,7 @@
 			"echo FAIL: could not find Linux kernel; " \
 		"fi; " \
 	"fi; "
+#define MERLIN_MODULE_SIGNING
 #endif
 
 #define BOARD_EXTRA_ENV_SETTINGS \
@@ -107,7 +109,8 @@
 	"mmcroot_eval=setenv mmcroot /dev/mmcblk0p${mmcpart}\0" \
 	"mmcpart_swap=if test ${mmcpart} -eq 2; then setenv mmcpart 1; else setenv mmcpart 2; fi; setenv bootcount 0; saveenv\0" \
 	"mmcargs=run mmcroot_eval; " \
-		"setenv bootargs ${cbootargs} console=${console},115200n8 " BOARD_BASE_BOOTARGS " root=${mmcroot} ro rootwait ${extra_bootargs}\0" \
+		"setenv bootargs ${cbootargs} console=${console},115200n8 " BOARD_BASE_BOOTARGS \
+		" root=${mmcroot} ro rootwait " MERLIN_MODULE_SIGNING " ${extra_bootargs}\0"	\
 	"fitimage=fitImage\0" \
 	"loadfit=ext2load mmc 0:${mmcpart} ${pxefile_addr_r} /boot/${fitimage}\0" \
 	"fitboot=echo Boot args: ${bootargs}; echo Booting FIT image...; " \
