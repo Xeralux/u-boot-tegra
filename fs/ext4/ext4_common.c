@@ -854,74 +854,67 @@ fail:
 
 static int unlink_filename(char *filename, unsigned int blknr)
 {
-	int totalbytes = 0;
-	int templength = 0;
-	int status, inodeno;
-	int found = 0;
-	char *root_first_block_buffer = NULL;
+	int status;
+	int inodeno = 0;
+	int offset;
+	char *block_buffer = NULL;
 	struct ext2_dirent *dir = NULL;
-	struct ext2_dirent *previous_dir = NULL;
-	char *ptr = NULL;
+	struct ext2_dirent *previous_dir;
 	struct ext_filesystem *fs = get_fs();
 	int ret = -1;
+	char *direntname;
 
-	/* get the first block of root */
-	root_first_block_buffer = zalloc(fs->blksz);
-	if (!root_first_block_buffer)
+	block_buffer = zalloc(fs->blksz);
+	if (!block_buffer)
 		return -ENOMEM;
+
+	/* read the directory block */
 	status = ext4fs_devread((lbaint_t)blknr * fs->sect_perblk, 0,
-				fs->blksz, root_first_block_buffer);
+				fs->blksz, block_buffer);
 	if (status == 0)
 		goto fail;
 
-	if (ext4fs_log_journal(root_first_block_buffer, blknr))
-		goto fail;
-	dir = (struct ext2_dirent *)root_first_block_buffer;
-	ptr = (char *)dir;
-	totalbytes = 0;
-	while (le16_to_cpu(dir->direntlen) >= 0) {
-		/*
-		 * blocksize-totalbytes because last
-		 * directory length i.e., *dir->direntlen
-		 * is free availble space in the block that
-		 * means it is a last entry of directory entry
-		 */
+	offset = 0;
+	do {
+		previous_dir = dir;
+		dir = (struct ext2_dirent *)(block_buffer + offset);
+		direntname = (char *)(dir) + sizeof(struct ext2_dirent);
+
+		int direntlen = le16_to_cpu(dir->direntlen);
+		if (direntlen < sizeof(struct ext2_dirent))
+			break;
+
 		if (dir->inode && (strlen(filename) == dir->namelen) &&
-		    (strncmp(ptr + sizeof(struct ext2_dirent),
-			     filename, dir->namelen) == 0)) {
-			printf("file found, deleting\n");
+		    (strncmp(direntname, filename, dir->namelen) == 0)) {
 			inodeno = le32_to_cpu(dir->inode);
-			if (previous_dir) {
-				uint16_t new_len;
-				new_len = le16_to_cpu(previous_dir->direntlen);
-				new_len += le16_to_cpu(dir->direntlen);
-				previous_dir->direntlen = cpu_to_le16(new_len);
-			} else {
-				dir->inode = 0;
-			}
-			found = 1;
 			break;
 		}
 
-		if (fs->blksz - totalbytes == le16_to_cpu(dir->direntlen))
-			break;
+		offset += direntlen;
 
-		/* traversing the each directory entry */
-		templength = le16_to_cpu(dir->direntlen);
-		totalbytes = totalbytes + templength;
-		previous_dir = dir;
-		dir = (struct ext2_dirent *)((char *)dir + templength);
-		ptr = (char *)dir;
-	}
+	} while (offset < fs->blksz);
 
+	if (inodeno > 0) {
+		printf("file found, deleting\n");
+		if (ext4fs_log_journal(block_buffer, blknr))
+			goto fail;
 
-	if (found == 1) {
-		if (ext4fs_put_metadata(root_first_block_buffer, blknr))
+		if (previous_dir) {
+			/* merge dir entry with predecessor */
+			uint16_t new_len;
+			new_len = le16_to_cpu(previous_dir->direntlen);
+			new_len += le16_to_cpu(dir->direntlen);
+			previous_dir->direntlen = cpu_to_le16(new_len);
+		} else {
+			/* invalidate dir entry */
+			dir->inode = 0;
+		}
+		if (ext4fs_put_metadata(block_buffer, blknr))
 			goto fail;
 		ret = inodeno;
 	}
 fail:
-	free(root_first_block_buffer);
+	free(block_buffer);
 
 	return ret;
 }
@@ -1516,6 +1509,68 @@ void ext4fs_allocate_blocks(struct ext2_inode *file_inode,
 
 #endif
 
+struct ext4_extentblk_node {
+	struct list_head lh;
+	unsigned long long block;
+	void *buf;
+};
+static LIST_HEAD(ext4_extentblk_list);
+static int ext4_extcache_enabled = 0;
+
+static void ext4_extentcache_clear(void)
+{
+	struct ext4_extentblk_node *node, *tmp;
+	list_for_each_entry_safe(node, tmp, &ext4_extentblk_list, lh) {
+		list_del(&node->lh);
+		free(node);
+	}
+}
+
+void ext4fs_cache_extent_blocks(int onoff) {
+
+	if (ext4_extcache_enabled != onoff)
+		ext4_extentcache_clear();
+	ext4_extcache_enabled = onoff;
+	debug("ext4fs extent caching now %s\n", onoff ? "ON" : "OFF");
+}
+
+static int extentcache_read(unsigned long long block,
+			    int log2_blksz, int blksz,
+			    char *buf)
+{
+	struct ext4_extentblk_node *node, *new;
+
+	if (ext4_extcache_enabled) {
+		list_for_each_entry(node, &ext4_extentblk_list, lh)
+			if (node->block == block) {
+				memcpy(buf, node->buf, blksz);
+				debug("extent cache hit for %llu\n", block);
+				return 1;
+			} else if (node->block > block)
+				break;
+		debug("extent cache miss for %llu\n", block);
+	}
+	if (!ext4fs_devread((lbaint_t)block << log2_blksz, 0, blksz, buf))
+		return 0;
+	if (ext4_extcache_enabled) {
+		new = malloc(sizeof(*new) + blksz);
+		if (!new) {
+			debug("extent cache node allocation failure\n");
+			return 1;
+		}
+		new->block = block;
+		new->buf = new + 1;
+		memcpy(new + 1, buf, blksz);
+		list_for_each_entry(node, &ext4_extentblk_list, lh)
+			if (node->block > new->block) {
+				list_add_tail(&new->lh, &node->lh);
+				return 1;
+			}
+		list_add_tail(&new->lh, &ext4_extentblk_list);
+	}
+	return 1;
+}
+
 static struct ext4_extent_header *ext4fs_get_extent_block
 	(struct ext2_data *data, char *buf,
 		struct ext4_extent_header *ext_block,
@@ -1547,8 +1602,7 @@ static struct ext4_extent_header *ext4fs_get_extent_block
 		block = le16_to_cpu(index[i].ei_leaf_hi);
 		block = (block << 32) + le32_to_cpu(index[i].ei_leaf_lo);
 
-		if (ext4fs_devread((lbaint_t)block << log2_blksz, 0, blksz,
-				   buf))
+		if (extentcache_read(block, log2_blksz, blksz, buf))
 			ext_block = (struct ext4_extent_header *)buf;
 		else
 			return NULL;
@@ -1624,12 +1678,13 @@ long int read_allocated_block(struct ext2_inode *inode, int fileblock)
 		- get_fs()->dev_desc->log2blksz;
 
 	if (le32_to_cpu(inode->flags) & EXT4_EXTENTS_FL) {
+		long int startblock, endblock;
 		char *buf = zalloc(blksz);
 		if (!buf)
 			return -ENOMEM;
 		struct ext4_extent_header *ext_block;
 		struct ext4_extent *extent;
-		int i = -1;
+		int i;
 		ext_block =
 			ext4fs_get_extent_block(ext4fs_root, buf,
 						(struct ext4_extent_header *)
@@ -1643,28 +1698,26 @@ long int read_allocated_block(struct ext2_inode *inode, int fileblock)
 
 		extent = (struct ext4_extent *)(ext_block + 1);
 
-		do {
-			i++;
-			if (i >= le16_to_cpu(ext_block->eh_entries))
-				break;
-		} while (fileblock >= le32_to_cpu(extent[i].ee_block));
-		if (--i >= 0) {
-			fileblock -= le32_to_cpu(extent[i].ee_block);
-			if (fileblock >= le16_to_cpu(extent[i].ee_len)) {
+		for (i = 0; i < le16_to_cpu(ext_block->eh_entries); i++) {
+			startblock = le32_to_cpu(extent[i].ee_block);
+			endblock = startblock + le16_to_cpu(extent[i].ee_len);
+
+			if (startblock > fileblock) {
+				/* Sparse file */
 				free(buf);
 				return 0;
-			}
 
-			start = le16_to_cpu(extent[i].ee_start_hi);
-			start = (start << 32) +
+			} else if (fileblock < endblock) {
+				start = le16_to_cpu(extent[i].ee_start_hi);
+				start = (start << 32) +
 					le32_to_cpu(extent[i].ee_start_lo);
-			free(buf);
-			return fileblock + start;
+				free(buf);
+				return (fileblock - startblock) + start;
+			}
 		}
 
-		printf("Extent Error\n");
 		free(buf);
-		return -1;
+		return 0;
 	}
 
 	/* Direct blocks. */
@@ -2342,6 +2395,7 @@ int ext4fs_mount(unsigned part_length)
 
 	if (le32_to_cpu(data->sblock.revision_level) == 0) {
 		fs->inodesz = 128;
+		fs->gdsize = 32;
 	} else {
 		debug("EXT4 features COMPAT: %08x INCOMPAT: %08x RO_COMPAT: %08x\n",
 		      __le32_to_cpu(data->sblock.feature_compatibility),
