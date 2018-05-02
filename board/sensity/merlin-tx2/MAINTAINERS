@@ -1,0 +1,6 @@
+Merlin BOARD
+M:	Matt Madison <matthew.madison@verizon.com>
+S:	Maintained
+F:	board/sensity/merlin-tx2/
+F:	include/configs/sensity-merlin-tx2.h
+F:	configs/sensity-merlin-tx2_defconfig

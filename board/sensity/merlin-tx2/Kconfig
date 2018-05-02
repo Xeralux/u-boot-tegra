@@ -1,0 +1,19 @@
+# Copyright (c) 2018 Verizon Communications, Inc.
+#
+# SPDX-License-Identifier: GPL-2.0
+
+if TARGET_SENSITY_MERLIN_TX2
+
+config SYS_BOARD
+	default "merlin-tx2"
+
+config SYS_VENDOR
+	default "sensity"
+
+config SYS_CONFIG_NAME
+	default "sensity-merlin-tx2"
+
+config MANUFACTURING
+	bool "Build for manufacturing use"
+
+endif

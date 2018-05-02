@@ -15,6 +15,11 @@ config TARGET_P2771_0000
 	  micro-B port, Ethernet, USB3 host port, SATA, PCIe, and two GPIO
 	  expansion headers.
 
+config TARGET_SENSITY_MERLIN_TX2
+	bool "Sensity Merlin-TX2 board"
+	help
+	  Sensity Merlin-TX2 Video Node
+
 endchoice
 
 config SYS_SOC
@@ -24,5 +29,6 @@ config SYS_INIT_SP_BSS_OFFSET
 	default 524288
 
 source "board/nvidia/p2771-0000/Kconfig"
+source "board/sensity/merlin-tx2/Kconfig"
 
 endif
