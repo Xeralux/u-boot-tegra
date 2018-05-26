@@ -24,12 +24,12 @@
 #define CONFIG_GENERIC_MMC
 #define CONFIG_TEGRA_MMC
 
-/* Environment in eMMC, at the end of 2nd "boot sector" */
+/* Environment in eMMC in boot1 partition, leaving room for GPT */
 #define CONFIG_ENV_IS_IN_MMC
 #define CONFIG_SYS_MMC_ENV_DEV		0
 #define CONFIG_SYS_MMC_ENV_PART		2
-#define CONFIG_ENV_OFFSET		(-CONFIG_ENV_SIZE)
-#define CONFIG_ENV_OFFSET_REDUND	(-2*CONFIG_ENV_SIZE)
+#define CONFIG_ENV_OFFSET		(-(36*512+CONFIG_ENV_SIZE))
+#define CONFIG_ENV_OFFSET_REDUND	(CONFIG_ENV_OFFSET-CONFIG_ENV_SIZE)
 
 #define CONFIG_BOOT_RETRY_TIME		-1
 #define CONFIG_BOOTCOUNT_ENV
