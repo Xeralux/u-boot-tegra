@@ -64,36 +64,13 @@
 #define CONFIG_EFI_PARTITION
 #define CONFIG_ENV_VARS_UBOOT_CONFIG
 
-#ifdef CONFIG_SECURE_BOOT_ONLY
 #define MERLIN_ENV_LEGACY_SETTINGS
 #define MERLIN_BOOTCMD_FALLBACK \
 	"echo FAIL: could not find Linux kernel; "
+
+#ifdef CONFIG_SECURE_BOOT_ONLY
 #define MERLIN_MODULE_SIGNING "module.sig_enforce"
 #else
-#define CONFIG_IMAGE_FORMAT_LEGACY
-#define CONFIG_CMD_BOOTI
-#define MERLIN_ENV_LEGACY_SETTINGS \
-	"image=Image\0" \
-	"initrdfile=initrd\0" \
-	"loadimage=echo Loading kernel at ${kernel_addr_r}; ext2load mmc 0:${mmcpart} ${kernel_addr_r} /boot/${image}\0" \
-	"loadinitrd=echo Loading initrd at ${ramdisk_addr_r}; if ext2load mmc 0:${mmcpart} ${ramdisk_addr_r} /boot/${initrdfile}; then " \
-			"setenv initrd_addr ${ramdisk_addr_r}; " \
-		"else " \
-			"echo No initrd present - skipping; " \
-			"setenv initrd_addr -; " \
-		"fi;\0" \
-	"mmcboot=run loadinitrd; echo Boot args: ${bootargs}; echo Booting from eMMC...; " \
-		"booti ${kernel_addr_r} ${initrd_addr} ${fdt_addr}\0"
-#define MERLIN_BOOTCMD_FALLBACK \
-	"if test \"${secureboot}\" != \"\"; then " \
-		"echo FAIL: could not find Linux kernel; " \
-	"else " \
-		"if run loadimage; then " \
-			"run mmcboot; " \
-		"else " \
-			"echo FAIL: could not find Linux kernel; " \
-		"fi; " \
-	"fi; "
 #define MERLIN_MODULE_SIGNING
 #endif
 
