@@ -38,13 +38,7 @@
 /* Crystal is 38.4MHz. clk_m runs at half that rate */
 #define COUNTER_FREQUENCY	19200000
 
-#if !defined(CONFIG_CPU_BL_IS_CBOOT)
-/* Parse the board ID EEPROM and update DT */
-#define CONFIG_NV_BOARD_ID_EEPROM
-#define CONFIG_NV_BOARD_ID_EEPROM_OF_MAC_ADDRS
-#define EEPROM_I2C_BUS		3
-#define EEPROM_I2C_ADDRESS	0x50
-#endif	/* !CPU_BL_IS_CBOOT */
+#define CONFIG_SYS_LONGHELP
 
 #ifdef CONFIG_MANUFACTURING
 #define CONFIG_BOOT_RETRY_TIME		-1
