@@ -5,3 +5,4 @@
 #
 
 obj-y	+= sensity-merlin.o
+obj-y	+= merlin-eeprom.o

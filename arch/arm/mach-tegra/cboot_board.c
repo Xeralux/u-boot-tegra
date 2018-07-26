@@ -384,6 +384,8 @@ static int set_cbootargs(void)
 	return ret;
 }
 
+__weak void cboot_init_late_extra(void *blob) {}
+
 int cboot_init_late(void)
 {
 	set_calculated_env_vars();
@@ -398,6 +400,8 @@ int cboot_init_late(void)
 #endif
 	/* Save CBoot bootargs to env */
 	set_cbootargs();
+
+	cboot_init_late_extra((void *)cboot_boot_x0);
 
 	return 0;
 }
