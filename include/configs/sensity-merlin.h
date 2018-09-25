@@ -42,11 +42,14 @@
 
 #ifdef CONFIG_MANUFACTURING
 #define CONFIG_BOOT_RETRY_TIME		-1
+#define BOOTCOUNT_VARS
 #else
 #define CONFIG_BOOT_RETRY_TIME		300
-#endif
 #define CONFIG_BOOTCOUNT_ENV
 #define CONFIG_BOOTCOUNT_LIMIT
+#define BOOTCOUNT_VARS	"upgrade_available=1\0" \
+			"bootlimit=3\0"
+#endif
 #define CONFIG_BOOT_RETRY_TIME_MIN	10
 #define CONFIG_RESET_TO_RETRY
 #define CONFIG_CONSOLE_DEV		"ttyS0"
@@ -70,8 +73,7 @@
 
 #define BOARD_EXTRA_ENV_SETTINGS \
 	"bootcount=0\0" \
-	"upgrade_available=1\0" \
-	"bootlimit=3\0" \
+	BOOTCOUNT_VARS \
 	"bootretry=" __stringify(CONFIG_BOOT_RETRY_TIME) "\0" \
 	"console=" CONFIG_CONSOLE_DEV "\0" \
 	"extra_bootargs=quiet loglevel=3\0" \
